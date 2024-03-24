@@ -1,0 +1,16 @@
+// We use the devcontainer here mostly as a replacement for creating
+// python virtual envs. This gives us the proper packages and
+// environment for linting tools, as well as
+// django-admin/manage.py commands.
+{
+    "name": "Python 3",
+    // This image should match up with what our app Dockerfile uses
+    "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bullseye",
+    // Install our project's python dependencies
+    "postCreateCommand": "pip3 install --user -r requirements.txt",
+    // Environment variables to match our app Dockerfile
+    "containerEnv": {
+        "PYTHONDONTWRITEBYTECODE": "1", // Don't write object files
+        "PYTHONUNBUFFERED": "1" // Flush io output
+    }
+}

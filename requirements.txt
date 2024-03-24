@@ -1,0 +1,14 @@
+# Base requirements for our vscode devcontainer setup
+
+# Linters
+pylint
+flake8
+black
+
+# Textual UI
+textual
+textual-dev
+
+# Misc Utils
+pyyaml
+
