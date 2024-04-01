@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ttork"
+version = "2024.0.0"
+dependencies = ["textual", "pyyaml"]
+requires-python = ">=3.12"
+authors = [{ name = "Andy Waller", email = "awaller@gmail.com" }]
+maintainers = [{ name = "Andy Waller", email = "awaller@gmail.com" }]
+description = "Textual Tilt Orkestrator: Multiple-Repository Tilt Orchestration Tool."
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = ["Tilt", "Docker", "ttork"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+]
+
+[project.optional-dependencies]
+
+[project.urls]
+Homepage = "https://github.com/SwordOfDamocles/ttork"
+Documentation = "https://github.com/SwordOfDamocles/ttork"
+Repository = "https://github.com/SwordOfDamocles/ttork"
+"Bug Tracker" = "https://github.com/SwordOfDamocles/ttork/issues"
+Changelog = "https://github.com/SwordOfDamocles/ttork/blob/master/CHANGELOG.md"
+
+[project.scripts]
+ttork-cli = "ttork:main"
