@@ -34,3 +34,6 @@ Footer {
     text-style: bold;
 }
 
+.tree--guides {
+    color: #5f43b2;
+}
