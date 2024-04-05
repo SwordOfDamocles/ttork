@@ -1,9 +1,6 @@
 import copy
 from rich.text import Text
-
-from textual.widgets.tree import TreeNode
 from textual.widgets import Tree
-
 from ttork.network import get_tilt_status
 
 
@@ -19,9 +16,9 @@ TILT_STATUS_ICONS = dict(
 
 
 class TiltStatusTree(Tree):
-    #
-    # Tree gets updated any time project_info changes
-    #
+    """TiltStatusTree tracks and displays the status of running
+    Tilt.dev services.
+    """
     # TODO: Initialization will come from yaml.config
     pinfo = {
         "/Users/awaller/waller_dev/projects/rcwl/seeder/Tiltfile": dict(
@@ -39,11 +36,19 @@ class TiltStatusTree(Tree):
     }
 
     def on_mount(self) -> None:
-        self.update_pinfo()
+        self.update_pinfo(force_refresh=True)
         self.set_interval(1, self.update_pinfo)
 
-    # This behaves as a combined watcher and updater
-    def update_pinfo(self) -> None:
+    def update_pinfo(self, force_refresh=False) -> None:
+        """Update the Tilt service statuses inside of the pinfo structure.
+
+        This acts as both a watcher and updater, as we can't use the standard
+        Textual paradigm of reactive attributes with our dict[dict].
+
+        The key to detecting changes in the pinfo dictionary is to use
+        deepcopy to create the 'old' version of the dict, then a simple
+        comparison to the current version will accurately detect changes.
+        """
         pinfo_old = copy.deepcopy(self.pinfo)
         for pkey in self.pinfo:
             status_json = get_tilt_status(self.pinfo[pkey]['port'])
@@ -51,81 +56,67 @@ class TiltStatusTree(Tree):
                 self.pinfo[pkey]["uiResources"] = status_json[
                     "uiResources"]
                 self.pinfo[pkey]["service_online"] = True
-                self.log.debug(
-                    'update_pinfo: got tilt status response: ', pkey,
-                    'online: ', self.pinfo[pkey]["service_online"],
-                )
             else:
-                self.log.debug('update_pinfo: no response: ', pkey)
                 self.pinfo[pkey]["uiResources"].clear()
                 self.pinfo[pkey]["service_online"] = False
 
-        # Reactive watch_(attribute) doesn't work for our dictionary, as the
-        # reactive system is doing simple comparisons on the values, which
-        # always are equivilant with our dictionary structure.
-        #
-        # The key here is that pinfo_old was initialized using the deepcopy
-        # method, and now the comparison will properly show if any key has
-        # been changed.
-        if pinfo_old != self.pinfo:
-            self.log.debug('TiltStatusTree: Detected data changes, updating.')
-            self.clear()
-            self.add_treedata(self.root, self.pinfo)
-            self.root.expand()
+        if pinfo_old != self.pinfo or force_refresh:
+            self.refresh_tree_view()
 
-    def add_treedata(self, root: TreeNode, project_data: object) -> None:
-        """Add data to a node"""
+    def refresh_tree_view(self) -> None:
+        """Clear and re-create all the tree nodes, based on self.pinfo
+        """
+        self.log.debug('TiltStatusTree: Detected data changes, updating.')
+        self.clear()
+        self.add_treedata()
+        self.root.expand()
 
-        self.log.event('add_treedata called')
-
-        def proper_add_node(node: TreeNode, data: object) -> None:
-            """Add a properly formatted node to the tree display for the
-            project.
-            """
-            for project_key in data:
-                project_node = root.add("")
-                project_node.expand()
-                project_pending = False
-                project_ok = True
-                for resource in data[project_key]['uiResources']:
-                    resource_node = project_node.add("")
-                    resource_node.allow_expand = False
-                    update_status = resource['status']['updateStatus']
-                    label = Text.assemble(
-                        TILT_STATUS_ICONS.get(
-                            update_status,
-                            TILT_STATUS_ICONS['other'],
-                        ),
-                        Text.from_markup(
-                            f" [b]{resource['metadata']['name']}[/b]"
-                        ),
-                    )
-                    resource_node.set_label(label)
-
-                    if (
-                        update_status == 'pending'
-                        or update_status == 'in_progress'
-                    ):
-                        project_pending = True
-                    elif update_status == 'error':
-                        project_ok = False
-
-                # Set the top-level status for the project based on resource
-                # status.
-                if not data[project_key]["service_online"]:
-                    ps_icon = TILT_STATUS_ICONS['offline']
-                elif project_pending:
-                    ps_icon = TILT_STATUS_ICONS['pending']
-                elif not project_ok:
-                    ps_icon = TILT_STATUS_ICONS['error']
-                else:
-                    ps_icon = TILT_STATUS_ICONS['ok']
-                project_label = Text.assemble(
-                    ps_icon,
+    def add_treedata(self) -> None:
+        """Add a properly formatted node to the tree display for the
+        projects in the self.pinfo data struct.
+        """
+        for project_key in self.pinfo:
+            project_node = self.root.add("")
+            project_node.expand()
+            project_pending = False
+            project_ok = True
+            for resource in self.pinfo[project_key]['uiResources']:
+                resource_node = project_node.add("")
+                resource_node.allow_expand = False
+                update_status = resource['status']['updateStatus']
+                label = Text.assemble(
+                    TILT_STATUS_ICONS.get(
+                        update_status,
+                        TILT_STATUS_ICONS['other'],
+                    ),
                     Text.from_markup(
-                        f" {data[project_key]["name"]}"
+                        f" [b]{resource['metadata']['name']}[/b]"
                     ),
                 )
-                project_node.set_label(project_label)
+                resource_node.set_label(label)
 
-        proper_add_node(root, project_data)
+                if (
+                    update_status == 'pending'
+                    or update_status == 'in_progress'
+                ):
+                    project_pending = True
+                elif update_status == 'error':
+                    project_ok = False
+
+            # Set the top-level status for the project based on resource
+            # status.
+            if not self.pinfo[project_key]["service_online"]:
+                ps_icon = TILT_STATUS_ICONS['offline']
+            elif project_pending:
+                ps_icon = TILT_STATUS_ICONS['pending']
+            elif not project_ok:
+                ps_icon = TILT_STATUS_ICONS['error']
+            else:
+                ps_icon = TILT_STATUS_ICONS['ok']
+            project_label = Text.assemble(
+                ps_icon,
+                Text.from_markup(
+                    f" {self.pinfo[project_key]["name"]}"
+                ),
+            )
+            project_node.set_label(project_label)
