@@ -103,8 +103,7 @@ class TiltStatusTree(Tree):
                 elif update_status == 'error':
                     project_ok = False
 
-            # Set the top-level status for the project based on resource
-            # status.
+            # Set the top-level status based on combined resource states
             if not self.pinfo[project_key]["service_online"]:
                 ps_icon = TILT_STATUS_ICONS['offline']
             elif project_pending:
