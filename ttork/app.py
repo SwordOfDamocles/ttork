@@ -2,8 +2,8 @@
 TTorkApp: Top-level ttork application
 """
 import requests
-
 from rich.text import Text
+import copy
 
 from textual.app import App, ComposeResult
 from textual.containers import Container, VerticalScroll
@@ -22,20 +22,12 @@ TILT_STATUS_ICONS = dict(
 )
 
 
-class TTorkApp(App):
-    """Textual Tilt ORKestrator Application
-    """
-    TITLE = "Textual Tilt ORKestrator"
-    CSS_PATH = "ttork.tcss"
-    BINDINGS = [
-        ("c", "clear", "Clear"),
-        ("q", "quit", "Quit"),
-    ]
-
-    # This will be read in from the yaml config file
-    project_info = {
-        # In yaml, this will be relative: 'seeder/Tiltfile', we will
-        # convert on initial load of yaml file based on cwd to absolute.
+class TiltStatusTree(Tree):
+    #
+    # Tree gets updated any time project_info changes
+    #
+    # TODO: Initialization will come from yaml.config
+    pinfo = {
         "/Users/awaller/waller_dev/projects/rcwl/seeder/Tiltfile": dict(
             name="Seeder",
             uiResources=[],
@@ -50,26 +42,75 @@ class TTorkApp(App):
         ),
     }
 
-    def compose(self) -> ComposeResult:
-        """Compose our UI."""
-        yield Header()
-        with Container():
-            yield Tree("Root", id="tree-view")
-            with VerticalScroll(id="code-view"):
-                yield Static(id="code", expand=True)
-        yield Footer()
+    def on_mount(self) -> None:
+        self.update_pinfo()
+        self.set_interval(1, self.update_pinfo)
 
-    @classmethod
-    def add_treedata(cls, root: TreeNode, project_data: object) -> None:
+    # This behaves as a combined watcher and updater
+    def update_pinfo(self) -> None:
+        pinfo_old = copy.deepcopy(self.pinfo)
+        for pkey in self.pinfo:
+            status_json = self.get_tilt_status(self.pinfo[pkey]['port'])
+            if status_json:
+                self.pinfo[pkey]["uiResources"] = status_json[
+                    "uiResources"]
+                self.pinfo[pkey]["service_online"] = True
+                self.log.debug(
+                    'update_pinfo: got tilt status response: ', pkey,
+                    'online: ', self.pinfo[pkey]["service_online"],
+                )
+            else:
+                self.log.debug('update_pinfo: no response: ', pkey)
+                self.pinfo[pkey]["uiResources"].clear()
+                self.pinfo[pkey]["service_online"] = False
+
+        # Reactive watch_(attribute) doesn't work for our dictionary, as the
+        # reactive system is doing simple comparisons on the values, which
+        # always are equivilant with our dictionary structure.
+        #
+        # The key here is that pinfo_old was initialized using the deepcopy
+        # method, and now the comparison will properly show if any key has
+        # been changed.
+        if pinfo_old != self.pinfo:
+            self.log.debug('TiltStatusTree: Detected data changes, updating.')
+            self.clear()
+            self.root.set_label("Projects")
+            self.add_treedata(self.root, self.pinfo)
+            self.root.expand()
+
+    def get_tilt_status(self, port: int) -> dict:
+        """Get the Tilt Status from the running tilt instance, specified
+        by port.
+        """
+        tilt_url = f"http://localhost:{port}/api/view"
+
+        try:
+            response = requests.get(tilt_url)
+
+            # Check the response status code
+            if response.status_code == 200:
+                # The request was successful
+                json_response = response.json()
+            else:
+                # The request failed
+                self.log.error(
+                    "Error querying tilt status: {}".format(
+                        response.status_code,
+                    )
+                )
+
+            return json_response
+        except Exception:
+            return None
+
+    def add_treedata(self, root: TreeNode, project_data: object) -> None:
         """Add data to a node"""
+
+        self.log.event('add_treedata called')
 
         def proper_add_node(node: TreeNode, data: object) -> None:
             """Add a properly formatted node to the tree display for the
             project.
-
-            Args:
-                node (TreeNode): _description_
-                data (object): _description_
             """
             for project_key in data:
                 project_node = root.add("")
@@ -119,48 +160,28 @@ class TTorkApp(App):
 
         proper_add_node(root, project_data)
 
-    # format this
-    def on_mount(self) -> None:
-        # Query the project info, if available
-        for pkey in self.project_info:
-            status_json = self.get_tilt_status(self.project_info[pkey]['port'])
-            if status_json:
-                self.project_info[pkey]["uiResources"] = status_json[
-                    "uiResources"]
-                self.project_info[pkey]["service_online"] = True
-            else:
-                self.project_info[pkey]["uiResources"].clear()
-                self.project_info[pkey]["service_online"] = False
 
-        # Set the tree nodes for all projects
-        tree = self.query_one(Tree)
-        tree.root.set_label("Projects")
-        self.add_treedata(tree.root, self.project_info)
-        tree.root.expand()
+class TTorkApp(App):
+    """Textual Tilt ORKestrator Application
+    """
+    TITLE = "Textual Tilt ORKestrator"
+    CSS_PATH = "ttork.tcss"
+    BINDINGS = [
+        ("c", "clear", "Clear"),
+        ("q", "quit", "Quit"),
+    ]
+
+    def compose(self) -> ComposeResult:
+        """Compose our UI."""
+        yield Header()
+        with Container():
+            # yield Tree("Root", id="tree-view")
+            yield TiltStatusTree("Root", id="tree-view")
+            with VerticalScroll(id="code-view"):
+                yield Static(id="code", expand=True)
+        yield Footer()
 
     def action_clear(self) -> None:
         """Clear the tree (remove all nodes)."""
-        tree = self.query_one(Tree)
+        tree = self.query_one(TiltStatusTree)
         tree.clear()
-
-    def get_tilt_status(self, port: int) -> dict:
-        tilt_url = f"http://localhost:{port}/api/view"
-
-        try:
-            response = requests.get(tilt_url)
-
-            # Check the response status code
-            if response.status_code == 200:
-                # The request was successful
-                json_response = response.json()
-            else:
-                # The request failed
-                print(
-                    "Error querying tilt status: {}".format(
-                        response.status_code,
-                    )
-                )
-
-            return json_response
-        except Exception:
-            return None
