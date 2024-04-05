@@ -1,9 +1,10 @@
-import requests
-from rich.text import Text
 import copy
+from rich.text import Text
 
 from textual.widgets.tree import TreeNode
 from textual.widgets import Tree
+
+from ttork.network import get_tilt_status
 
 
 TILT_STATUS_ICONS = dict(
@@ -45,7 +46,7 @@ class TiltStatusTree(Tree):
     def update_pinfo(self) -> None:
         pinfo_old = copy.deepcopy(self.pinfo)
         for pkey in self.pinfo:
-            status_json = self.get_tilt_status(self.pinfo[pkey]['port'])
+            status_json = get_tilt_status(self.pinfo[pkey]['port'])
             if status_json:
                 self.pinfo[pkey]["uiResources"] = status_json[
                     "uiResources"]
@@ -71,31 +72,6 @@ class TiltStatusTree(Tree):
             self.clear()
             self.add_treedata(self.root, self.pinfo)
             self.root.expand()
-
-    def get_tilt_status(self, port: int) -> dict:
-        """Get the Tilt Status from the running tilt instance, specified
-        by port.
-        """
-        tilt_url = f"http://localhost:{port}/api/view"
-
-        try:
-            response = requests.get(tilt_url)
-
-            # Check the response status code
-            if response.status_code == 200:
-                # The request was successful
-                json_response = response.json()
-            else:
-                # The request failed
-                self.log.error(
-                    "Error querying tilt status: {}".format(
-                        response.status_code,
-                    )
-                )
-
-            return json_response
-        except Exception:
-            return None
 
     def add_treedata(self, root: TreeNode, project_data: object) -> None:
         """Add data to a node"""
