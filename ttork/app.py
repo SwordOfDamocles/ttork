@@ -23,9 +23,9 @@ TILT_STATUS_ICONS = dict(
 
 
 class TTorkApp(App):
-    """Textual Tilt ORKestration App
+    """Textual Tilt ORKestrator Application
     """
-
+    TITLE = "Textual Tilt ORKestrator"
     CSS_PATH = "ttork.tcss"
     BINDINGS = [
         ("c", "clear", "Clear"),
