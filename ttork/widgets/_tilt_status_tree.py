@@ -34,7 +34,8 @@ class TiltStatusTree(Tree):
         self.initialize_pinfo()
 
         # TODO: Remove. For debugging only
-        self.pinfo['/Users/awaller/waller_dev/projects/rcwl/seeder/Tiltfile']['port'] = 10350
+        self.pinfo['/Users/awaller/waller_dev/projects/rcwl/seeder/Tiltfile'][
+            'port'] = 10350
 
         self.update_pinfo(force_refresh=True)
         self.set_interval(1, self.update_pinfo)
@@ -53,8 +54,8 @@ class TiltStatusTree(Tree):
         for pkey in self.pinfo:
             status_json = get_tilt_status(self.pinfo[pkey]['port'])
             if status_json:
-                self.pinfo[pkey]["uiResources"] = status_json[
-                    "uiResources"]
+                self.pinfo[pkey]["uiResources"] = status_json.get(
+                    'uiResources', [])
                 self.pinfo[pkey]["service_online"] = True
             else:
                 self.pinfo[pkey]["uiResources"].clear()
@@ -83,7 +84,8 @@ class TiltStatusTree(Tree):
             for resource in self.pinfo[project_key]['uiResources']:
                 resource_node = project_node.add("")
                 resource_node.allow_expand = False
-                update_status = resource['status']['updateStatus']
+                update_status = resource['status'].get(
+                    'updateStatus', 'offline')
                 label = Text.assemble(
                     TILT_STATUS_ICONS.get(
                         update_status,
