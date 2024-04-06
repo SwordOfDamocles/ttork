@@ -22,6 +22,9 @@ class TiltService:
         ]["port"] = 10350
 
     def update_status_info(self) -> None:
+        """Refresh the status_info struct with information about
+        the running Tilt instances.
+        """
         for pkey in self.status_info:
             port = self.status_info[pkey]["port"]
             if port > 0:
@@ -38,6 +41,9 @@ class TiltService:
     def get_tilt_status(self, port: int) -> dict:
         """Get the Tilt Status from the running tilt instance, specified
         by port.
+
+        Returns:
+            dict: json response dictionary, or None
         """
         tilt_url = f"http://localhost:{port}/api/view"
 
@@ -62,4 +68,10 @@ class TiltService:
             return None
 
     def get_status_info(self) -> dict:
+        """Get a copy of the current status info struct, to be used
+        to check for changes to the status.
+
+        Returns:
+            dict: copy.deepcopy of the status_info dictionary
+        """
         return copy.deepcopy(self.status_info)

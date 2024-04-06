@@ -29,11 +29,7 @@ class TiltStatusTree(Tree):
         """Update the Tilt service statuses inside of the pinfo structure.
 
         This acts as both a watcher and updater, as we can't use the standard
-        Textual paradigm of reactive attributes with our dict[dict].
-
-        The key to detecting changes in the pinfo dictionary is to use
-        deepcopy to create the 'old' version of the dict, then a simple
-        comparison to the current version will accurately detect changes.
+        Textual paradigm of reactive attributes with our dict[dict] struct.
         """
         status_info_old = self.tilt_service.get_status_info()
         self.tilt_service.update_status_info()
