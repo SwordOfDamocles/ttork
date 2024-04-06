@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ._tilt_service import get_tilt_status
+from ._tilt_service import TiltService
 
 __all__ = [
-    "get_tilt_status",
+    "TiltService",
 ]

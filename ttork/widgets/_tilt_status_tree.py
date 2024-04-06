@@ -1,7 +1,6 @@
-import copy
 from rich.text import Text
 from textual.widgets import Tree
-from ttork.network import get_tilt_status
+from ttork.network import TiltService
 
 
 TILT_STATUS_ICONS = dict(
@@ -20,22 +19,8 @@ class TiltStatusTree(Tree):
     Tilt.dev services.
     """
 
-    def initialize_pinfo(self):
-        self.pinfo = {}
-        for project in self.app.ttork_config['projects']:
-            self.pinfo[project['tiltFilePath']] = dict(
-                name=project['name'],
-                uiResources=[],
-                service_online=False,
-                port=0,
-            )
-
     def on_mount(self) -> None:
-        self.initialize_pinfo()
-
-        # TODO: Remove. For debugging only
-        self.pinfo['/Users/awaller/waller_dev/projects/rcwl/seeder/Tiltfile'][
-            'port'] = 10350
+        self.tilt_service = TiltService(self.app.ttork_config)
 
         self.update_pinfo(force_refresh=True)
         self.set_interval(1, self.update_pinfo)
@@ -50,18 +35,13 @@ class TiltStatusTree(Tree):
         deepcopy to create the 'old' version of the dict, then a simple
         comparison to the current version will accurately detect changes.
         """
-        pinfo_old = copy.deepcopy(self.pinfo)
-        for pkey in self.pinfo:
-            status_json = get_tilt_status(self.pinfo[pkey]['port'])
-            if status_json:
-                self.pinfo[pkey]["uiResources"] = status_json.get(
-                    'uiResources', [])
-                self.pinfo[pkey]["service_online"] = True
-            else:
-                self.pinfo[pkey]["uiResources"].clear()
-                self.pinfo[pkey]["service_online"] = False
+        status_info_old = self.tilt_service.get_status_info()
+        self.tilt_service.update_status_info()
 
-        if pinfo_old != self.pinfo or force_refresh:
+        if (
+            status_info_old != self.tilt_service.get_status_info()
+            or force_refresh
+        ):
             self.refresh_tree_view()
 
     def refresh_tree_view(self) -> None:
@@ -76,12 +56,13 @@ class TiltStatusTree(Tree):
         """Add a properly formatted node to the tree display for the
         projects in the self.pinfo data struct.
         """
-        for project_key in self.pinfo:
+        pinfo = self.tilt_service.get_status_info()
+        for project_key in pinfo:
             project_node = self.root.add("")
             project_node.expand()
             project_pending = False
             project_ok = True
-            for resource in self.pinfo[project_key]['uiResources']:
+            for resource in pinfo[project_key]['uiResources']:
                 resource_node = project_node.add("")
                 resource_node.allow_expand = False
                 update_status = resource['status'].get(
@@ -106,7 +87,7 @@ class TiltStatusTree(Tree):
                     project_ok = False
 
             # Set the top-level status based on combined resource states
-            if not self.pinfo[project_key]["service_online"]:
+            if not pinfo[project_key]["service_online"]:
                 ps_icon = TILT_STATUS_ICONS['offline']
             elif project_pending:
                 ps_icon = TILT_STATUS_ICONS['pending']
@@ -117,7 +98,7 @@ class TiltStatusTree(Tree):
             project_label = Text.assemble(
                 ps_icon,
                 Text.from_markup(
-                    f" {self.pinfo[project_key]["name"]}"
+                    f" {pinfo[project_key]["name"]}"
                 ),
             )
             project_node.set_label(project_label)
