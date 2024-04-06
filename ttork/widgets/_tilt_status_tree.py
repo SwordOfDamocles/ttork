@@ -19,23 +19,23 @@ class TiltStatusTree(Tree):
     """TiltStatusTree tracks and displays the status of running
     Tilt.dev services.
     """
-    # TODO: Initialization will come from yaml.config
-    pinfo = {
-        "/Users/awaller/waller_dev/projects/rcwl/seeder/Tiltfile": dict(
-            name="Seeder",
-            uiResources=[],
-            service_online=False,
-            port=10350,
-        ),
-        "/Users/awaller/waller_dev/projects/rcwl/feeder/Tiltfile": dict(
-            name="Feeder",
-            uiResources=[],
-            service_online=False,
-            port=10351,
-        ),
-    }
+
+    def initialize_pinfo(self):
+        self.pinfo = {}
+        for project in self.app.ttork_config['projects']:
+            self.pinfo[project['tiltFilePath']] = dict(
+                name=project['name'],
+                uiResources=[],
+                service_online=False,
+                port=0,
+            )
 
     def on_mount(self) -> None:
+        self.initialize_pinfo()
+
+        # TODO: Remove. For debugging only
+        self.pinfo['/Users/awaller/waller_dev/projects/rcwl/seeder/Tiltfile']['port'] = 10350
+
         self.update_pinfo(force_refresh=True)
         self.set_interval(1, self.update_pinfo)
 

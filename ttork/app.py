@@ -17,6 +17,8 @@ class TTorkApp(App):
         ("q", "quit", "Quit"),
     ]
 
+    ttork_config = None
+
     def compose(self) -> ComposeResult:
         """Compose our UI."""
         yield Header()
