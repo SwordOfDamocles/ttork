@@ -20,7 +20,8 @@ class TiltStatusTree(Tree):
     """
 
     def on_mount(self) -> None:
-        self.tilt_service = TiltService(self.app.ttork_config)
+        self.tilt_service = TiltService(self.app.ttork_config, self.log)
+        self.tilt_service.start_tilt_processes()
 
         self.update_pinfo(force_refresh=True)
         self.set_interval(1, self.update_pinfo)
