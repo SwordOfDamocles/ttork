@@ -4,13 +4,14 @@ import socket
 import subprocess
 import requests
 import atexit
+import logging
 from signal import SIGKILL
 
 
 class TiltService:
     """Runs and tracks status on Tilt services."""
 
-    def __init__(self, app_config, logger):
+    def __init__(self, app_config: dict, logger: logging.Logger) -> None:
         self.status_info = {}
         self.log = logger
         atexit.register(self.cleanup)
@@ -23,6 +24,7 @@ class TiltService:
                     uiResources=[],
                     service_online=False,
                     port=0,
+                    pid=0,
                 )
 
     def update_status_info(self) -> None:
@@ -80,53 +82,133 @@ class TiltService:
         """
         return copy.deepcopy(self.status_info)
 
-    def start_tilt_processes(self) -> None:
-        next_free_port = get_next_free_port(10350)
-        for pkey in self.status_info:
-            if os.path.exists(pkey):
-                if self.status_info[pkey]["port"] == 0:
+    def restart_tilt_process(self, project_key: str) -> None:
+        """Restart a single Tilt process, by project key."""
+
+        # Tear down the existing Tilt process and resources
+        self.tear_down_tilt_resources(project_key)
+
+        # Start a new Tilt process
+        self.start_tilt_process(project_key)
+
+    def start_tilt_process(self, project_key: str) -> None:
+        if project_key in self.status_info:
+            if (
+                os.path.exists(project_key)
+                and self.status_info[project_key]["service_online"] is False
+            ):
+                if self.status_info[project_key]["port"] == 0:
                     # Grab the next free port, starting at 10350
-                    next_free_port = get_next_free_port(next_free_port)
-                    self.status_info[pkey]["port"] = next_free_port
-                    next_free_port += 1
+                    next_free_port = self.get_free_port()
+                    if next_free_port < 0:
+                        self.log.error(
+                            "No free ports available, "
+                            "unable to start Tilt process."
+                        )
+                        return
+                    self.status_info[project_key]["port"] = next_free_port
 
                 tilt_startup_command = [
                     "tilt",
                     "up",
-                    f"--port={self.status_info[pkey]['port']}",
-                    f"--file={pkey}",
+                    f"--port={self.status_info[project_key]['port']}",
+                    f"--file={project_key}",
                 ]
 
-                self.log.debug(f"Starting Tilt process: {tilt_startup_command}")
                 self.log.debug(
-                    f"Starting Tilt process in: {os.path.dirname(pkey)}"
+                    f"Tilt process startup command: {tilt_startup_command}"
+                )
+                self.log.debug(
+                    f"Starting Tilt process in: {os.path.dirname(project_key)}"
                 )
                 process = subprocess.Popen(
                     " ".join(tilt_startup_command),
                     shell=True,
-                    cwd=os.path.dirname(pkey),
+                    cwd=os.path.dirname(project_key),
                     stdin=subprocess.DEVNULL,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
 
                 self.log.debug(f"Started process: {process.pid}")
+                self.status_info[project_key]["pid"] = process.pid
                 self.processes.append(process)
 
+    def start_tilt_processes(self) -> None:
+        """Bring up all Tilt projects."""
+        for pkey in self.status_info:
+            self.start_tilt_process(pkey)
+
+    def tear_down_all_resources(self) -> None:
+        """Tear down all Tilt projects."""
+        for project_key in self.status_info:
+            self.tear_down_tilt_resources(project_key)
+
+    def tear_down_tilt_resources(self, project_key: str) -> None:
+        """Tear down Tilt resources of a single project, by project key."""
+        if project_key in self.status_info:
+
+            # First, make sure the Tilt process isn't running
+            self.stop_tilt_process(project_key)
+
+            # Then do 'tilt down' command to clean up any tilt-generated
+            # resources
+            tilt_down_command = [
+                "tilt",
+                "down",
+                f"--file={project_key}",
+            ]
+
+            self.log.debug(f"Tearing down Tilt Resources: {project_key}")
+
+            subprocess.Popen(
+                " ".join(tilt_down_command),
+                shell=True,
+                cwd=os.path.dirname(project_key),
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+    def stop_tilt_process(self, project_key: str) -> None:
+        """Kill single running Tilt process, by project key."""
+        if (
+            project_key in self.status_info
+            and self.status_info[project_key]["pid"] > 0
+        ):
+            self.log.debug(
+                f"Terminating process: {project_key}:"
+                f"{self.status_info[project_key]['pid']}"
+            )
+            os.kill(self.status_info[project_key]["pid"], SIGKILL)
+            self.status_info[project_key]["pid"] = 0
+
     def stop_tilt_processes(self) -> None:
-        # Terminate all running processes
-        for process in self.processes:
-            print(f"Terminating process: {process.pid}")
-            os.kill(process.pid, SIGKILL)
+        """Kill all running Tilt processes."""
+        for pkey in self.status_info:
+            self.stop_tilt_process(pkey)
 
-        # Tilt resource cleanup
-        # for pkey in self.status_info:
-        #     if self.status_info[pkey]["port"] > 0:
-        #         os.kill(get_process_id(self.status_info[pkey]["port"]), 9)
-        #     tilt_shutdown_command = f"tilt down --file={pkey}"
-        #     subprocess.run(tilt_shutdown_command, shell=True)
-
+        # Clear out the processes list
         self.processes.clear()
+
+    def get_free_port(self) -> int:
+        """Get the next free port starting at 10350.
+
+        Returns:
+            int: The next free port.
+        """
+        start_port = 10350
+
+        # Check status_info for any ports in use
+        used_ports = [pinfo["port"] for pinfo in self.status_info.values()]
+
+        while start_port in used_ports or not is_port_free(start_port):
+            start_port += 1
+
+        if start_port < 65535:
+            return start_port
+        else:
+            return -1
 
     def cleanup(self) -> None:
         self.stop_tilt_processes()
@@ -137,21 +219,6 @@ class TiltService:
 
     def __del__(self):
         self.cleanup()
-
-
-def get_next_free_port(start_port: int) -> int:
-    """Get the next free port starting at start_port.
-
-    Args:
-        start_port (int): The port to start checking from.
-
-    Returns:
-        int: The next free port.
-    """
-    port = start_port
-    while not is_port_free(port):
-        port += 1
-    return port
 
 
 def is_port_free(port: int) -> bool:
