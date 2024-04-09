@@ -82,16 +82,10 @@ class TiltService:
         """
         return copy.deepcopy(self.status_info)
 
-    def restart_tilt_process(self, project_key: str) -> None:
-        """Restart a single Tilt process, by project key.
-
-        This looks like:
-            - Kill the running Tilt process if it is still running.
-            - Tear down the Tilt resources (tilt down).
-            - Start a new Tilt process (tilt up).
-        """
-        self.tear_down_tilt_resources(project_key)
-        self.start_tilt_process(project_key)
+    def start_all_tilt(self) -> None:
+        """Start all Tilt processes."""
+        for project_key in self.status_info:
+            self.start_tilt_process(project_key)
 
     def start_tilt_process(self, project_key: str) -> None:
         """Start up a single Tilt process, by project key."""
@@ -189,6 +183,7 @@ class TiltService:
             )
             os.kill(self.status_info[project_key]["pid"], SIGKILL)
             self.status_info[project_key]["pid"] = 0
+            self.status_info[project_key]["service_online"] = False
 
     def stop_tilt_processes(self) -> None:
         """Kill all running Tilt processes."""

@@ -19,6 +19,11 @@ class TiltStatusTree(Tree):
     Tilt.dev services.
     """
 
+    BINDINGS = [
+        ("s", "start_tilt", "Start Tilt"),
+        ("t", "teardown_tilt", "Tear Down Tilt"),
+    ]
+
     def on_mount(self) -> None:
         self.tilt_service = TiltService(self.app.ttork_config, self.log)
         self.tilt_service.start_tilt_processes()
@@ -48,6 +53,16 @@ class TiltStatusTree(Tree):
         self.clear()
         self.add_treedata()
         self.root.expand()
+
+    def action_start_tilt(self) -> None:
+        """Start the Tilt services."""
+        self.tilt_service.start_all_tilt()
+        # self.update_pinfo(force_refresh=True)
+
+    def action_teardown_tilt(self) -> None:
+        """Tear down the Tilt services."""
+        self.tilt_service.tear_down_all_resources()
+        # self.update_pinfo(force_refresh=True)
 
     def add_treedata(self) -> None:
         """Add a properly formatted node to the tree display for the
