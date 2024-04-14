@@ -95,7 +95,6 @@ class TiltService:
                 and self.status_info[project_key]["service_online"] is False
             ):
                 if self.status_info[project_key]["port"] == 0:
-                    # Grab the next free port, starting at 10350
                     next_free_port = self.get_free_port()
                     if next_free_port < 0:
                         self.log.error(
