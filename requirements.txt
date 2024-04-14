@@ -4,12 +4,20 @@
 #
 #    pip-compile
 #
+cachetools==5.3.3
+    # via google-auth
 certifi==2024.2.2
-    # via requests
+    # via
+    #   kubernetes
+    #   requests
 charset-normalizer==3.3.2
     # via requests
-idna==3.6
+google-auth==2.29.0
+    # via kubernetes
+idna==3.7
     # via requests
+kubernetes==29.0.0
+    # via ttork (pyproject.toml)
 linkify-it-py==2.0.3
     # via markdown-it-py
 markdown-it-py[linkify,plugins]==3.0.0
@@ -21,19 +29,48 @@ mdit-py-plugins==0.4.0
     # via markdown-it-py
 mdurl==0.1.2
     # via markdown-it-py
+oauthlib==3.2.2
+    # via
+    #   kubernetes
+    #   requests-oauthlib
+pyasn1==0.6.0
+    # via
+    #   pyasn1-modules
+    #   rsa
+pyasn1-modules==0.4.0
+    # via google-auth
 pygments==2.17.2
     # via rich
+python-dateutil==2.9.0.post0
+    # via kubernetes
 pyyaml==6.0.1
-    # via ttork (pyproject.toml)
+    # via
+    #   kubernetes
+    #   ttork (pyproject.toml)
 requests==2.31.0
-    # via ttork (pyproject.toml)
+    # via
+    #   kubernetes
+    #   requests-oauthlib
+    #   ttork (pyproject.toml)
+requests-oauthlib==2.0.0
+    # via kubernetes
 rich==13.7.1
     # via textual
-textual==0.55.0
+rsa==4.9
+    # via google-auth
+six==1.16.0
+    # via
+    #   kubernetes
+    #   python-dateutil
+textual==0.56.4
     # via ttork (pyproject.toml)
-typing-extensions==4.10.0
+typing-extensions==4.11.0
     # via textual
 uc-micro-py==1.0.3
     # via linkify-it-py
 urllib3==2.2.1
-    # via requests
+    # via
+    #   kubernetes
+    #   requests
+websocket-client==1.7.0
+    # via kubernetes
