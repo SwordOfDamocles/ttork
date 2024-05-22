@@ -8,14 +8,38 @@ Screen {
     width: auto;
     height: 100%;
     dock: left;
+    border: $secondary;
 }
 
-#code-view {
+#tree-view:focus {
+    border: heavy $secondary;
+}
+
+#k8s-resource-table {
+    width: auto;
     overflow: auto scroll;
     min-width: 100%;
+    border: $secondary;
+    height: 100%;
 }
-#code {
-    width: auto;
+
+
+#k8s-resource-table > .datatable--header {
+    text-style: bold;
+    background: #5f43b2;
+    color: #fefdfd;
+}
+
+/*
+#k8s-resource-table > .datatable--header-hover {
+    text-style: bold;
+    background: $surface;
+    color: $primary;
+}
+*/
+
+#k8s-resource-table:focus {
+    border: heavy $secondary;
 }
 
 Header {
@@ -37,3 +61,4 @@ Footer {
 .tree--guides {
     color: #5f43b2;
 }
+

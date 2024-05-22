@@ -1,6 +1,7 @@
 from rich.text import Text
 from textual.widgets import Tree
 from ttork.network import TiltService
+from textual import events
 
 
 TILT_STATUS_ICONS = dict(
@@ -25,6 +26,7 @@ class TiltStatusTree(Tree):
     ]
 
     def on_mount(self) -> None:
+        self.border_title = "Tilt Services"
         self.tilt_service = TiltService(self.app.ttork_config, self.log)
         self.tilt_service.start_tilt_processes()
 
@@ -114,3 +116,7 @@ class TiltStatusTree(Tree):
                 ),
             )
             project_node.set_label(project_label)
+
+    def _on_resize(self, event: events.Resize) -> None:
+        super()._on_resize(event)
+        self.app.on_resize(event)
