@@ -1,5 +1,5 @@
 class K8sResourceData:
-    """K8sResourceTableData is a class that holds the data for a
+    """K8sResourceData is a class that holds the data for a
     K8sResourceTable widget.
 
     List of meta dictionaries for each column.
