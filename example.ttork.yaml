@@ -1,0 +1,10 @@
+k8s:
+  namespace: default
+  context: kind-kind
+
+projects:
+  - name: Seeder
+    tiltFilePath: /Users/awaller/waller_dev/projects/rcwl/seeder/Tiltfile
+
+  - name: Feeder
+    tiltFilePath: /Users/awaller/waller_dev/projects/rcwl/feeder/Tiltfile
