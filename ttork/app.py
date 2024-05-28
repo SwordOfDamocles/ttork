@@ -6,7 +6,6 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import Footer, Header
 from ttork.widgets import TiltStatusTree, K8sResourceTable
-from ttork.models import K8sResourceData, K8sData
 
 
 # KTD_DEP = K8sResourceData(

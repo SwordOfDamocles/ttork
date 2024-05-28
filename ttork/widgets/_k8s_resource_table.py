@@ -1,5 +1,4 @@
 from textual.widgets import DataTable
-from ttork.models import K8sData
 from rich.text import Text
 from ttork.network import K8sService
 

@@ -1,6 +1,6 @@
 import copy
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from kubernetes import client, config
 
 from ttork.models import K8sData, K8sResourceData
