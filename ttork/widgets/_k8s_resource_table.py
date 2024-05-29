@@ -6,7 +6,8 @@ KRT_STYLE_MAP = {
     "info": "cyan",
     "warning": "yellow",
     "error": "red",
-    "loading": "purple",
+    "loading": "green",
+    "terminating": "magenta",
 }
 
 
@@ -34,7 +35,12 @@ class K8sResourceTable(DataTable):
             self.set_data()
 
     def set_data(self, available_width: int = 0):
-        # Set the initial data and columns
+        """Set the data for the K8sResourceTable."""
+
+        # Save the current cursor position (highlighted row)
+        current_cursor = self.cursor_row
+
+        # Clear existing values
         self.clear(True)
         self.clear_cached_dimensions()
         self.log.debug(f"Available Width: {available_width}")
@@ -94,3 +100,6 @@ class K8sResourceTable(DataTable):
                     )
                 )
             self.add_row(*styled_row)
+
+        # Restore the cursor position (highlighted row)
+        self.move_cursor(row=current_cursor)
