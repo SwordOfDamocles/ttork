@@ -5,10 +5,13 @@ class K8sData:
     """K8sData holds a collection of K8sResourceData objects."""
 
     def __init__(self):
-        self.resources = {}
+        self.resources: dict[str, K8sResourceData] = {}
 
     def __getitem__(self, key: str) -> K8sResourceData:
         return self.resources[key]
 
     def __setitem__(self, key: str, value: K8sResourceData):
         self.resources[key] = value
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.resources

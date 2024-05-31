@@ -144,13 +144,11 @@ class K8sResourceTable(DataTable):
         K8sResourceData instance.
         """
         selected_row = self.get_row_at(self.cursor_row)
-        if selected_row is not None:
+        if selected_row is not None and view in self.k8s_service.k8s_data:
             self.crumbs.append(view)
             self.update_cinfo(
                 force_refresh=True, reset_cursor=True, show_view=view
             )
-        else:
-            self.log.debug("No row selected")
 
     def action_show_previous(self) -> None:
         """Show the previous resource type in the table."""
