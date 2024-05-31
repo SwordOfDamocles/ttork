@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from kubernetes import client
 from ttork.utilities import format_age
 from ttork.models import K8sResourceData
+from textual.binding import Binding, _Bindings
 
 
 def get_pods(namespace: str) -> K8sResourceData:
@@ -19,7 +20,7 @@ def get_pods(namespace: str) -> K8sResourceData:
                 "values": [
                     pod.metadata.name,
                     pod.status.phase,
-                    pod.status.pod_ip,
+                    pod.status.pod_ip or "-",
                     pod.metadata.namespace,
                     age_display,
                 ],
@@ -31,10 +32,20 @@ def get_pods(namespace: str) -> K8sResourceData:
         namespace=namespace,
         col_meta=[
             {"name": "NAME", "width": None, "align": "left"},
-            {"name": "STATUS", "width": 10, "align": "center"},
-            {"name": "IP", "width": 15, "align": "center"},
-            {"name": "NAMESPACE", "width": None, "align": "left"},
-            {"name": "AGE", "width": 15, "align": "left"},
+            {"name": "STATUS", "width": 10, "align": "left"},
+            {"name": "IP", "width": 15, "align": "left"},
+            {"name": "NAMESPACE", "width": 15, "align": "left"},
+            {"name": "AGE", "width": 10, "align": "left"},
         ],
+        bindings=_Bindings(
+            [
+                Binding(
+                    "enter",
+                    "select_row('Containers')",
+                    "Show Containers",
+                    show=True,
+                ),
+            ]
+        ),
         data=pod_data,
     )

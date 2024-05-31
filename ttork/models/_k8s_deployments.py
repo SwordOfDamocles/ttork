@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from kubernetes import client
 from ttork.utilities import format_age
 from ttork.models import K8sResourceData
+from textual.binding import Binding, _Bindings
 
 
 def get_deployments(namespace: str) -> K8sResourceData:
@@ -35,11 +36,16 @@ def get_deployments(namespace: str) -> K8sResourceData:
         namespace=namespace,
         col_meta=[
             {"name": "NAME", "width": None, "align": "left"},
-            {"name": "READY", "width": 10, "align": "center"},
-            {"name": "CURRENT", "width": 10, "align": "center"},
-            {"name": "AVAILABLE", "width": 10, "align": "center"},
-            {"name": "NAMESPACE", "width": None, "align": "left"},
-            {"name": "AGE", "width": 15, "align": "left"},
+            {"name": "READY", "width": 10, "align": "left"},
+            {"name": "CURRENT", "width": 7, "align": "center"},
+            {"name": "AVAILABLE", "width": 9, "align": "center"},
+            {"name": "NAMESPACE", "width": 20, "align": "left"},
+            {"name": "AGE", "width": 10, "align": "left"},
         ],
+        bindings=_Bindings(
+            [
+                Binding("enter", "select_row('Pods')", "Show Pods", show=True),
+            ]
+        ),
         data=deployment_data,
     )

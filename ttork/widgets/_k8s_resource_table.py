@@ -1,6 +1,9 @@
 from textual.widgets import DataTable
 from rich.text import Text
 from ttork.network import K8sService
+from textual.binding import _Bindings
+import copy
+
 
 KRT_STYLE_MAP = {
     "info": "cyan",
@@ -16,20 +19,37 @@ class K8sResourceTable(DataTable):
     resources.
     """
 
+    base_bindings = _Bindings()
+    BINDINGS = [
+        ("escape", "show_previous", "Previous"),
+    ]
+
     def on_mount(self) -> None:
         self.cursor_type = "row"
         self.zebra_stripes = True
         self.k8s_service = K8sService(self.app.ttork_config, self.log)
         self.k8s_service.update_cluster_status()
         self.resource_view = "Deployments"
+        self.crumbs = ["Deployments"]
         self.available_width = 0
         self.update_cinfo(force_refresh=True)
-        self.set_interval(1, self.update_cinfo)
+        self.set_interval(2, self.update_cinfo)
+        self.base_bindings = self._merged_bindings.copy()
 
-    def update_cinfo(self, force_refresh=False) -> None:
+    def update_cinfo(
+        self, force_refresh=False, reset_cursor=False, show_view=None
+    ) -> None:
         """Update the cluster status information."""
         k8s_data_old = self.k8s_service.get_k8s_data()
         self.k8s_service.update_cluster_status()
+
+        if reset_cursor:
+            self.move_cursor(row=0)
+
+        if show_view:
+            tmp_view = copy.copy(self.resource_view)
+            self.resource_view = show_view
+            self.previous_view = tmp_view
 
         if k8s_data_old != self.k8s_service.get_k8s_data() or force_refresh:
             self.set_data()
@@ -51,6 +71,19 @@ class K8sResourceTable(DataTable):
 
         # Get resource data for the current view
         resource_data = self.k8s_service.k8s_data[self.resource_view]
+
+        # Dynamically update the key bindings to be resource type specific
+        if resource_data.bindings:
+            self._bindings = self._bindings.merge(
+                [self.base_bindings, resource_data.bindings]
+            )
+            self.refresh_bindings()
+
+            # Debug logging (TODO: Remove))
+            self.log.debug(f"Bindings POST: {self.BINDINGS}")
+            self.log.debug(f"Bindings private: {self._bindings}")
+            self.log.debug(f"Bindings Merged: {self._merged_bindings}")
+            self.log.debug(f"Base Bindings: {self.base_bindings}")
 
         # I think we'll have to have a function to set this
         self.border_title = Text.assemble(
@@ -103,3 +136,28 @@ class K8sResourceTable(DataTable):
 
         # Restore the cursor position (highlighted row)
         self.move_cursor(row=current_cursor)
+
+    def action_select_row(self, view: str) -> None:
+        """Generic select resource action for table.
+
+        Specific implementation is provided in the bindings for each
+        K8sResourceData instance.
+        """
+        selected_row = self.get_row_at(self.cursor_row)
+        if selected_row is not None:
+            self.crumbs.append(view)
+            self.update_cinfo(
+                force_refresh=True, reset_cursor=True, show_view=view
+            )
+        else:
+            self.log.debug("No row selected")
+
+    def action_show_previous(self) -> None:
+        """Show the previous resource type in the table."""
+        if len(self.crumbs) == 1:
+            return
+        self.crumbs.pop()
+        previous = self.crumbs[-1]
+        self.update_cinfo(
+            force_refresh=True, reset_cursor=True, show_view=previous
+        )

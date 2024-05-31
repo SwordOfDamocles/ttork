@@ -1,3 +1,6 @@
+from textual.binding import _Bindings
+
+
 class K8sResourceData:
     """K8sResourceData is a class that holds the data for a
     K8sResourceTable widget.
@@ -24,12 +27,13 @@ class K8sResourceData:
 
     """
 
-    def __init__(self, name, namespace, col_meta: list, data: list):
+    def __init__(self, name, namespace, col_meta: list, data: list, **kwargs):
         self.name = name
         self.namespace = namespace
         self.col_names = []
         self.col_min_widths = []
         self.col_alignments = []
+        self.bindings = kwargs.get("bindings", _Bindings())
 
         # List of column indices that have dynamic widths
         self.dynamic_columns = []
