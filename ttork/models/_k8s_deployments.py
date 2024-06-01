@@ -5,10 +5,14 @@ from ttork.models import K8sResourceData
 from textual.binding import Binding, _Bindings
 
 
-def get_deployments(namespace: str) -> K8sResourceData:
+def get_deployments(
+    namespace: str, label_selector: str = None
+) -> K8sResourceData:
     """Get the Deployment resources from the cluster."""
     api_instance = client.AppsV1Api()
-    deployments = api_instance.list_namespaced_deployment(namespace=namespace)
+    deployments = api_instance.list_namespaced_deployment(
+        namespace=namespace, label_selector=label_selector
+    )
     deployment_data = []
     now = datetime.now(timezone.utc)
     for deployment in deployments.items:
@@ -48,4 +52,5 @@ def get_deployments(namespace: str) -> K8sResourceData:
             ]
         ),
         data=deployment_data,
+        selector={"label": "app=", "index": 0},
     )

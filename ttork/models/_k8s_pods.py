@@ -5,10 +5,12 @@ from ttork.models import K8sResourceData
 from textual.binding import Binding, _Bindings
 
 
-def get_pods(namespace: str) -> K8sResourceData:
+def get_pods(namespace: str, label_selector: str = None) -> K8sResourceData:
     """Get the Pod resources from the cluster."""
     api_instance = client.CoreV1Api()
-    pods = api_instance.list_namespaced_pod(namespace=namespace)
+    pods = api_instance.list_namespaced_pod(
+        namespace=namespace, label_selector=label_selector
+    )
     pod_data = []
     now = datetime.now(timezone.utc)
     for pod in pods.items:

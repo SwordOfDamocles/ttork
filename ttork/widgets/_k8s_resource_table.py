@@ -37,19 +37,32 @@ class K8sResourceTable(DataTable):
         self.base_bindings = self._merged_bindings.copy()
 
     def update_cinfo(
-        self, force_refresh=False, reset_cursor=False, show_view=None
+        self,
+        force_refresh=False,
+        reset_cursor=False,
+        show_view=None,
+        label_selector=None,
     ) -> None:
         """Update the cluster status information."""
         k8s_data_old = self.k8s_service.get_k8s_data()
-        self.k8s_service.update_cluster_status()
 
-        if reset_cursor:
-            self.move_cursor(row=0)
-
+        # Set the view
         if show_view:
             tmp_view = copy.copy(self.resource_view)
             self.resource_view = show_view
             self.previous_view = tmp_view
+
+        # Apply label_selector, if defined (will persist across updates)
+        if label_selector:
+            self.k8s_service.set_label_selector(
+                self.resource_view, label_selector
+            )
+
+        # Update the cluster status
+        self.k8s_service.update_cluster_status()
+
+        if reset_cursor:
+            self.move_cursor(row=0)
 
         if k8s_data_old != self.k8s_service.get_k8s_data() or force_refresh:
             self.set_data()
@@ -145,16 +158,34 @@ class K8sResourceTable(DataTable):
         """
         selected_row = self.get_row_at(self.cursor_row)
         if selected_row is not None and view in self.k8s_service.k8s_data:
+            current_view = self.crumbs[-1]
             self.crumbs.append(view)
+
+            # Apply label_selector, if defined by parent view
+            selector = self.k8s_service.k8s_data[current_view].selector
+            if selector:
+                label_selector = "{0}{1}".format(
+                    selector["label"], selected_row[selector["index"]]
+                )
+            else:
+                label_selector = None
+
             self.update_cinfo(
-                force_refresh=True, reset_cursor=True, show_view=view
+                force_refresh=True,
+                reset_cursor=True,
+                show_view=view,
+                label_selector=label_selector,
             )
 
     def action_show_previous(self) -> None:
         """Show the previous resource type in the table."""
         if len(self.crumbs) == 1:
             return
-        self.crumbs.pop()
+
+        # Clear any label selector for the current view when exiting the view
+        current_view = self.crumbs.pop()
+        self.k8s_service.clear_label_selector(current_view)
+
         previous = self.crumbs[-1]
         self.update_cinfo(
             force_refresh=True, reset_cursor=True, show_view=previous

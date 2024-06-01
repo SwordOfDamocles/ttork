@@ -34,6 +34,7 @@ class K8sResourceData:
         self.col_min_widths = []
         self.col_alignments = []
         self.bindings = kwargs.get("bindings", _Bindings())
+        self.selector = kwargs.get("selector", None)
 
         # List of column indices that have dynamic widths
         self.dynamic_columns = []
