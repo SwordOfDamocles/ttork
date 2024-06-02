@@ -50,4 +50,5 @@ def get_pods(namespace: str, label_selector: str = None) -> K8sResourceData:
             ]
         ),
         data=pod_data,
+        selector={"label": "pod=", "index": 0},
     )

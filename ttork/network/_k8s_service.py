@@ -2,7 +2,7 @@ import copy
 import logging
 from kubernetes import config
 
-from ttork.models import K8sData, get_deployments, get_pods
+from ttork.models import K8sData, get_deployments, get_pods, get_containers
 
 
 class K8sService:
@@ -29,6 +29,12 @@ class K8sService:
                 "function": get_pods,
                 "label_selector": None,
             },
+            "Containers": {
+                "name": "Containers",
+                "namespace": self.namespace,
+                "function": get_containers,
+                "label_selector": None,
+            },
         }
 
     def update_cluster_status(self) -> None:
@@ -52,3 +58,7 @@ class K8sService:
     def clear_label_selector(self, resource_name: str) -> None:
         """Clear the label selector for the specified resource."""
         self.resources[resource_name]["label_selector"] = None
+
+    def get_label_selector(self, resource_name: str) -> str:
+        """Get the label selector for the specified resource."""
+        return self.resources[resource_name]["label_selector"]

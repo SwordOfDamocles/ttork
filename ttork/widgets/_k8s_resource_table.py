@@ -67,6 +67,19 @@ class K8sResourceTable(DataTable):
         if k8s_data_old != self.k8s_service.get_k8s_data() or force_refresh:
             self.set_data()
 
+    def set_border_title(self) -> None:
+        """Set the border title for the K8sResourceTable."""
+        resource_data = self.k8s_service.k8s_data[self.resource_view]
+
+        selected = self.k8s_service.get_label_selector(self.resource_view)
+
+        self.border_title = Text.assemble(
+            resource_data.name,
+            (f"({resource_data.namespace})", "blue"),
+            (f"[{len(resource_data)}]", "green"),
+            (f"<{selected}>", "orange") if selected else "",
+        )
+
     def set_data(self, available_width: int = 0):
         """Set the data for the K8sResourceTable."""
 
@@ -92,18 +105,7 @@ class K8sResourceTable(DataTable):
             )
             self.refresh_bindings()
 
-            # Debug logging (TODO: Remove))
-            self.log.debug(f"Bindings POST: {self.BINDINGS}")
-            self.log.debug(f"Bindings private: {self._bindings}")
-            self.log.debug(f"Bindings Merged: {self._merged_bindings}")
-            self.log.debug(f"Base Bindings: {self.base_bindings}")
-
-        # I think we'll have to have a function to set this
-        self.border_title = Text.assemble(
-            resource_data.name,
-            (f"({resource_data.namespace})", "blue"),
-            (f"[{len(resource_data)}]", "green"),
-        )
+        self.set_border_title()
 
         # Get the minimum table content width
         self.min_table_width = sum(resource_data.col_min_widths)
