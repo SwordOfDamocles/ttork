@@ -125,8 +125,8 @@ class K8sContainers:
                     Binding(
                         "enter",
                         "select_row('Logs')",
-                        "Show Containers",
-                        show=True,
+                        "Show Logs",
+                        show=False,
                     ),
                 ]
             ),
