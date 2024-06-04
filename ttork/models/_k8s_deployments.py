@@ -61,6 +61,7 @@ class K8sDeployments:
                     Binding(
                         "enter", "select_row('Pods')", "Show Pods", show=True
                     ),
+                    Binding("d", "show_description", "Description", show=True),
                 ]
             ),
             data=deployment_data,

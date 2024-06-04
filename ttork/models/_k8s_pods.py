@@ -58,6 +58,7 @@ class K8sPods:
                         "Show Containers",
                         show=True,
                     ),
+                    Binding("d", "show_description", "Description", show=True),
                 ]
             ),
             data=pod_data,

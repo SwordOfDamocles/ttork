@@ -22,7 +22,6 @@ class K8sResourceTable(DataTable):
     base_bindings = _Bindings()
     BINDINGS = [
         ("escape", "show_previous", "Previous"),
-        ("d", "show_description", "Description"),
     ]
 
     def on_mount(self) -> None:
