@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 from ._k8s_resource_data import K8sResourceData
-from ._k8s_data import K8sData
-from ._k8s_deployments import get_deployments
-from ._k8s_pods import get_pods
-from ._k8s_containers import get_containers
+from ._k8s_deployments import K8sDeployments
+from ._k8s_pods import K8sPods
+from ._k8s_containers import K8sContainers
 
 __all__ = [
     "K8sResourceData",
-    "K8sData",
-    "get_deployments",
-    "get_pods",
-    "get_containers",
+    "K8sDeployments",
+    "K8sPods",
+    "K8sContainers",
 ]

@@ -1,9 +1,9 @@
-from textual.widgets import DataTable
-from rich.text import Text
-from ttork.network import K8sService
-from textual.binding import _Bindings
 import copy
+from rich.text import Text
+from textual.widgets import DataTable
+from textual.binding import _Bindings
 
+from ttork.network import K8sService
 
 KRT_STYLE_MAP = {
     "info": "cyan",
@@ -22,6 +22,7 @@ class K8sResourceTable(DataTable):
     base_bindings = _Bindings()
     BINDINGS = [
         ("escape", "show_previous", "Previous"),
+        ("d", "show_description", "Description"),
     ]
 
     def on_mount(self) -> None:
@@ -69,7 +70,9 @@ class K8sResourceTable(DataTable):
 
     def set_border_title(self) -> None:
         """Set the border title for the K8sResourceTable."""
-        resource_data = self.k8s_service.k8s_data[self.resource_view]
+        resource_data = self.k8s_service.resources[
+            self.resource_view
+        ].get_resource_data()
 
         selected = self.k8s_service.get_label_selector(self.resource_view)
 
@@ -96,7 +99,9 @@ class K8sResourceTable(DataTable):
             self.available_width = available_width
 
         # Get resource data for the current view
-        resource_data = self.k8s_service.k8s_data[self.resource_view]
+        resource_data = self.k8s_service.resources[
+            self.resource_view
+        ].get_resource_data()
 
         # Dynamically update the key bindings to be resource type specific
         if resource_data.bindings:
@@ -159,12 +164,16 @@ class K8sResourceTable(DataTable):
         K8sResourceData instance.
         """
         selected_row = self.get_row_at(self.cursor_row)
-        if selected_row is not None and view in self.k8s_service.k8s_data:
+        if selected_row is not None and view in self.k8s_service.resources:
             current_view = self.crumbs[-1]
             self.crumbs.append(view)
 
             # Apply label_selector, if defined by parent view
-            selector = self.k8s_service.k8s_data[current_view].selector
+            selector = (
+                self.k8s_service.resources[current_view]
+                .get_resource_data()
+                .selector
+            )
             if selector:
                 label_selector = "{0}{1}".format(
                     selector["label"], selected_row[selector["index"]]
@@ -192,3 +201,17 @@ class K8sResourceTable(DataTable):
         self.update_cinfo(
             force_refresh=True, reset_cursor=True, show_view=previous
         )
+
+    def action_show_description(self) -> None:
+        """Show the description of the selected resource."""
+        selected_row = self.get_row_at(self.cursor_row)
+        if selected_row is not None:
+            description = self.k8s_service.resources[
+                self.resource_view
+            ].get_description(str(selected_row[0]))
+
+            if description:
+                info = self.app.query_one("#info-box")
+                info.text = description
+                info.visible = True
+                info.focus()

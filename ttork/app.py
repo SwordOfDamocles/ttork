@@ -5,7 +5,7 @@ TTorkApp: Top-level ttork application
 from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import Footer, Header
-from ttork.widgets import TiltStatusTree, K8sResourceTable
+from ttork.widgets import TiltStatusTree, K8sResourceTable, ResourceTextArea
 
 
 class TTorkApp(App):
@@ -25,6 +25,13 @@ class TTorkApp(App):
         with Container():
             yield TiltStatusTree("Projects", id="tree-view")
             yield K8sResourceTable(id="k8s-resource-table")
+            yield ResourceTextArea.code_editor(
+                "Undefined",
+                id="info-box",
+                read_only=True,
+                language="yaml",
+                theme="dracula",
+            )
         yield Footer()
 
     def on_resize(self, event):
