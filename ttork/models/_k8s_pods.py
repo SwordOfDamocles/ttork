@@ -1,3 +1,4 @@
+import yaml
 from datetime import datetime, timezone
 from kubernetes import client
 from ttork.utilities import format_age
@@ -62,6 +63,14 @@ class K8sPods:
             data=pod_data,
             selector={"label": "pod=", "index": 0},
         )
+
+    def get_description(self, name: str) -> str:
+        """Get the description of the specified pod."""
+        api_instance = client.CoreV1Api()
+        pod = api_instance.read_namespaced_pod(
+            name=name, namespace=self.namespace
+        )
+        return yaml.dump(pod.to_dict(), default_flow_style=False)
 
     def get_resource_data(self) -> K8sResourceData:
         """Return the current resource data."""
