@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from kubernetes import client
 from textual.binding import Binding, _Bindings
 
+
 from ttork.utilities import format_age
 from ttork.models import K8sResourceData
 
@@ -62,6 +63,7 @@ class K8sDeployments:
                         "enter", "select_row('Pods')", "Show Pods", show=True
                     ),
                     Binding("d", "show_description", "Description", show=True),
+                    Binding("ctrl+d", "delete_resource", "Delete", show=True),
                 ]
             ),
             data=deployment_data,
@@ -75,6 +77,17 @@ class K8sDeployments:
             name=name, namespace=self.namespace
         )
         return yaml.dump(deployment.to_dict(), default_flow_style=False)
+
+    def delete_resource(self, name: str) -> None:
+        """Delete the specified Deployment."""
+        api_instance = client.AppsV1Api()
+        api_instance.delete_namespaced_deployment(
+            name=name,
+            namespace=self.namespace,
+            body=client.V1DeleteOptions(
+                propagation_policy="Foreground", grace_period_seconds=5
+            ),
+        )
 
     def get_resource_data(self) -> K8sResourceData:
         """Return the current resource data."""

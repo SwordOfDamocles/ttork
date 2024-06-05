@@ -1,9 +1,11 @@
 import copy
 from rich.text import Text
+from textual.app import ComposeResult
 from textual.widgets import DataTable
 from textual.binding import _Bindings
-
+from textual.message import Message
 from ttork.network import K8sService
+from ._confirmation_dialog import ConfirmationDialog
 
 KRT_STYLE_MAP = {
     "info": "cyan",
@@ -23,6 +25,22 @@ class K8sResourceTable(DataTable):
     BINDINGS = [
         ("escape", "show_previous", "Previous"),
     ]
+
+    class DeleteResource(Message):
+        """DeleteResource is a Message that triggers a resource deletion"""
+
+        def __init__(self, resource_type: str, identifier: str) -> None:
+            self.identifier = identifier
+            self.resource_type = resource_type
+            self.bubble = True
+            super().__init__()
+
+    def compose(self) -> ComposeResult:
+        """Compose the K8sResourceTable."""
+        yield from super().compose()
+        yield ConfirmationDialog(
+            "Confirm Delete? Y/n", id="k8s-resource-table-confirmation"
+        )
 
     def on_mount(self) -> None:
         self.cursor_type = "row"
@@ -214,3 +232,30 @@ class K8sResourceTable(DataTable):
                 info.text = description
                 info.visible = True
                 info.focus()
+
+    def action_delete_resource(self) -> None:
+        """Delete the selected resource."""
+        selected_row = self.get_row_at(self.cursor_row)
+        if selected_row is not None:
+            confirmation = self.app.query_one(
+                "#k8s-resource-table-confirmation"
+            )
+
+            # Show confirmation dialog, and pass it the appropriate message
+            # to use if the user confirms the action.
+            confirmation.show(
+                "Confirm Delete? Y/n",
+                self.DeleteResource(self.resource_view, str(selected_row[0])),
+            )
+
+    def on_k8s_resource_table_delete_resource(
+        self, message: DeleteResource
+    ) -> None:
+        """Handle the deletion of a resource."""
+        if hasattr(
+            self.k8s_service.resources[message.resource_type],
+            "delete_resource",
+        ):
+            self.k8s_service.resources[message.resource_type].delete_resource(
+                message.identifier
+            )

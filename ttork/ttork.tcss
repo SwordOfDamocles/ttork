@@ -1,6 +1,8 @@
 Screen {
     background: $surface-darken-1;
-    layers: below above;
+    layers: below above warning;
+    layout: grid;
+    align: center middle;
 }
 
 #tree-view {
@@ -24,6 +26,7 @@ Screen {
     border: $secondary;
     height: 100%;
     layer: below;
+    align: center middle;
 }
 
 
@@ -71,4 +74,11 @@ Footer {
     visibility: hidden;
     overflow: auto;
     scrollbar-gutter: stable;
+}
+
+#k8s-resource-table-confirmation {
+    layer: warning;
+    width: 40;
+    height: 3;
+    background: #5f43b2;
 }

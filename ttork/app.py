@@ -5,7 +5,11 @@ TTorkApp: Top-level ttork application
 from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import Footer, Header
-from ttork.widgets import TiltStatusTree, K8sResourceTable, ResourceTextArea
+from ttork.widgets import (
+    TiltStatusTree,
+    K8sResourceTable,
+    ResourceTextArea,
+)
 
 
 class TTorkApp(App):
@@ -22,6 +26,7 @@ class TTorkApp(App):
     def compose(self) -> ComposeResult:
         """Compose our UI."""
         yield Header()
+        # yield ConfirmationDialog("Confirm Delete? Y/n", id="confirm-delete")
         with Container():
             yield TiltStatusTree("Projects", id="tree-view")
             yield K8sResourceTable(id="k8s-resource-table")
