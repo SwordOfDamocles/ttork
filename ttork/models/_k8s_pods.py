@@ -59,6 +59,7 @@ class K8sPods:
                         show=True,
                     ),
                     Binding("d", "show_description", "Description", show=True),
+                    Binding("ctrl+d", "delete_resource", "Delete", show=True),
                 ]
             ),
             data=pod_data,
@@ -72,6 +73,17 @@ class K8sPods:
             name=name, namespace=self.namespace
         )
         return yaml.dump(pod.to_dict(), default_flow_style=False)
+
+    def delete_resource(self, name: str) -> None:
+        """Delete the specified pod."""
+        api_instance = client.CoreV1Api()
+        api_instance.delete_namespaced_pod(
+            name=name,
+            namespace=self.namespace,
+            body=client.V1DeleteOptions(
+                propagation_policy="Foreground", grace_period_seconds=5
+            ),
+        )
 
     def get_resource_data(self) -> K8sResourceData:
         """Return the current resource data."""

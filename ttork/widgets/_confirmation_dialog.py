@@ -31,11 +31,7 @@ class ConfirmationDialog(TextArea):
 
     def action_confirm(self) -> None:
         """Confirm the action."""
-        mprocessed = self.post_message(self.message)
-        if not mprocessed:
-            self.log.debug("Message not processed")
-        else:
-            self.log.debug("Message processed")
+        self.post_message(self.message)
         self.hide()
 
     def action_cancel(self) -> None:
