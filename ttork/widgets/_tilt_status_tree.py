@@ -1,7 +1,8 @@
+import webbrowser
 from rich.text import Text
 from textual.widgets import Tree
-from ttork.network import TiltService
 from textual import events
+from ttork.network import TiltService
 
 
 TILT_STATUS_ICONS = dict(
@@ -23,6 +24,7 @@ class TiltStatusTree(Tree):
     BINDINGS = [
         ("s", "start_tilt", "Start Tilt"),
         ("t", "teardown_tilt", "Tear Down Tilt"),
+        ("space", "open_tilt_ui", "Open Tilt UI"),
     ]
 
     def on_mount(self) -> None:
@@ -59,12 +61,33 @@ class TiltStatusTree(Tree):
     def action_start_tilt(self) -> None:
         """Start the Tilt services."""
         self.tilt_service.start_all_tilt()
-        # self.update_pinfo(force_refresh=True)
 
     def action_teardown_tilt(self) -> None:
         """Tear down the Tilt services."""
         self.tilt_service.tear_down_all_resources()
-        # self.update_pinfo(force_refresh=True)
+
+    def action_open_tilt_ui(self) -> None:
+        """Open the Tilt UI in the browser."""
+        selected_node = self.cursor_node
+        if selected_node.data:
+            webbrowser.open_new_tab(
+                "http://localhost:{0}/r/(all)/overview".format(
+                    selected_node.data['port'],
+                    )
+                )
+
+    def check_action(
+        self, action: str, parameters: tuple[object, ...]
+    ) -> bool:
+        """Check if the action is allowed."""
+        if action == "open_tilt_ui":
+            # Disable if the tilt service is shown as offline
+            selected_node = self.cursor_node
+            if selected_node.data:
+                return selected_node.data['online']
+            else:
+                return False
+        return True
 
     def add_treedata(self) -> None:
         """Add a properly formatted node to the tree display for the
@@ -72,12 +95,18 @@ class TiltStatusTree(Tree):
         """
         pinfo = self.tilt_service.get_status_info()
         for project_key in pinfo:
-            project_node = self.root.add("")
+            p_node_data = {
+                'key': project_key,
+                'name': pinfo[project_key]['name'],
+                'port': pinfo[project_key]['port'],
+                'online': pinfo[project_key]['service_online'],
+            }
+            project_node = self.root.add("", data=p_node_data)
             project_node.expand()
             project_pending = False
             project_ok = True
             for resource in pinfo[project_key]['uiResources']:
-                resource_node = project_node.add("")
+                resource_node = project_node.add("", data=p_node_data)
                 resource_node.allow_expand = False
                 update_status = resource['status'].get(
                     'updateStatus', 'offline')
