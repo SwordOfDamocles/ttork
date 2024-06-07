@@ -9,6 +9,7 @@ from ttork.widgets import (
     TiltStatusTree,
     K8sResourceTable,
     ResourceTextArea,
+    ContainerLogs,
 )
 
 
@@ -37,6 +38,7 @@ class TTorkApp(App):
                 language="yaml",
                 theme="dracula",
             )
+            yield ContainerLogs("Logs", id="logs-display")
         yield Footer()
 
     def on_resize(self, event):

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from kubernetes import client
+from kubernetes.client.rest import ApiException
 from textual.binding import Binding, _Bindings
 
 from ttork.utilities import format_age
@@ -14,6 +15,7 @@ class K8sContainers:
         self.namespace: str = namespace
         self.label_selector: str = None
         self.resource_data: K8sResourceData = None
+        self.pod_name: str = None
 
     def refresh_resource_data(self) -> None:
         """Get the Containers resources from the cluster."""
@@ -22,6 +24,7 @@ class K8sContainers:
             return None
         else:
             pod_name = self.label_selector.split("=")[1]
+            self.pod_name = pod_name
 
         now = datetime.now(timezone.utc)
         api_instance = client.CoreV1Api()
@@ -126,7 +129,7 @@ class K8sContainers:
                         "enter",
                         "select_row('Logs')",
                         "Show Logs",
-                        show=False,
+                        show=True,
                     ),
                 ]
             ),
@@ -152,3 +155,20 @@ class K8sContainers:
             return "Running"
         else:
             return "Unknown"
+
+    def get_container_logs(self, container_name: str, pod_name: str):
+        """Get the logs for the specified container."""
+        api_instance = client.CoreV1Api()
+        try:
+            logs = api_instance.read_namespaced_pod_log(
+                name=pod_name,
+                namespace=self.namespace,
+                container=container_name,
+                tail_lines=100,
+            )
+            return logs
+        except ApiException:
+            self.log.debug(
+                f"Failed to get logs for {container_name} in {pod_name}."
+            )
+        return ""

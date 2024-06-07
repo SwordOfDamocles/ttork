@@ -181,16 +181,29 @@ class K8sResourceTable(DataTable):
         K8sResourceData instance.
         """
         selected_row = self.get_row_at(self.cursor_row)
-        if selected_row is not None and view in self.k8s_service.resources:
-            current_view = self.crumbs[-1]
-            self.crumbs.append(view)
+        valid_views = [str(s) for s in self.k8s_service.resources.keys()]
 
-            # Apply label_selector, if defined by parent view
+        # Logs is a valid view, but does not have a resource associated with it
+        valid_views.append("Logs")
+        if selected_row is not None and view in valid_views:
+            current_view = self.crumbs[-1]
             selector = (
                 self.k8s_service.resources[current_view]
                 .get_resource_data()
                 .selector
             )
+
+            # Show the logs for the selected container
+            if view == "Logs":
+                pod_name = self.k8s_service.resources["Containers"].pod_name
+                self.app.query_one("#logs-display").show(
+                    pod_name, str(selected_row[0])
+                )
+                return
+
+            self.crumbs.append(view)
+
+            # Apply label_selector, if defined by parent view
             if selector:
                 label_selector = "{0}{1}".format(
                     selector["label"], selected_row[selector["index"]]

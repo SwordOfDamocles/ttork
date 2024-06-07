@@ -1,6 +1,6 @@
 Screen {
     background: $surface-darken-1;
-    layers: below above warning;
+    layers: main desc logs warning;
     layout: grid;
     align: center middle;
 }
@@ -12,7 +12,7 @@ Screen {
     height: 100%;
     dock: left;
     border: $secondary;
-    layer: below;
+    layer: main;
 }
 
 #tree-view:focus {
@@ -25,7 +25,7 @@ Screen {
     min-width: 100%;
     border: $secondary;
     height: 100%;
-    layer: below;
+    layer: main;
     align: center middle;
 }
 
@@ -69,7 +69,7 @@ Footer {
 }
 
 #info-box {
-    layer: above;
+    layer: desc;
     height: 100%;
     visibility: hidden;
     overflow: auto;
@@ -81,4 +81,12 @@ Footer {
     width: 40;
     height: 3;
     background: #5f43b2;
+}
+
+#logs-display {
+    layer: logs;
+    height: 100%;
+    visibility: hidden;
+    overflow: auto;
+    scrollbar-gutter: stable;
 }
