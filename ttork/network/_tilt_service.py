@@ -18,10 +18,14 @@ class TiltService:
         self.processes = []
 
         for project in app_config.get("projects", []):
+            env_vars = {}
+            for env_var in project.get("environment", []):
+                env_vars[env_var["name"]] = env_var["value"]
             if "tiltFilePath" in project:
                 self.status_info[project["tiltFilePath"]] = dict(
                     name=project.get("name", "NameUnset"),
                     uiResources=[],
+                    env_vars=env_vars,
                     service_online=False,
                     port=0,
                     pid=0,
@@ -117,10 +121,16 @@ class TiltService:
                 self.log.debug(
                     f"Starting Tilt process in: {os.path.dirname(project_key)}"
                 )
+                tilt_env = os.environ.copy()
+                for env_var in self.status_info[project_key]["env_vars"]:
+                    tilt_env[env_var] = self.status_info[project_key][
+                        "env_vars"
+                    ][env_var]
                 process = subprocess.Popen(
                     " ".join(tilt_startup_command),
                     shell=True,
                     cwd=os.path.dirname(project_key),
+                    env=tilt_env,
                     stdin=subprocess.DEVNULL,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,

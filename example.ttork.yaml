@@ -5,6 +5,16 @@ k8s:
 projects:
   - name: Seeder
     tiltFilePath: /Users/awaller/waller_dev/projects/rcwl/seeder/Tiltfile
+    environment:
+      - name: APP_PORT
+        value: "8080"
+      - name: DB_PORT
+        value: "5433"
 
   - name: Feeder
     tiltFilePath: /Users/awaller/waller_dev/projects/rcwl/feeder/Tiltfile
+    environment:
+      - name: APP_PORT
+        value: "8081"
+      - name: DB_PORT
+        value: "5434"
