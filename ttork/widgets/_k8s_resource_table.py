@@ -272,3 +272,16 @@ class K8sResourceTable(DataTable):
             self.k8s_service.resources[message.resource_type].delete_resource(
                 message.identifier
             )
+
+    def action_resource_call(self, action: str) -> None:
+        """Dynamic method for calling resource defined methods.
+
+        Call the specified method on the selected resource, passing it
+        the app and the selected row data.
+        """
+        selected_row = self.get_row_at(self.cursor_row)
+        if selected_row is not None:
+            getattr(
+                self.k8s_service.resources[self.resource_view],
+                action,
+            )(self.app, selected_row)

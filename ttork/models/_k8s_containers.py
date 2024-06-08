@@ -1,7 +1,9 @@
+from os import system
 from datetime import datetime, timezone
 from kubernetes import client
 from kubernetes.client.rest import ApiException
 from textual.binding import Binding, _Bindings
+from textual.app import App
 
 from ttork.utilities import format_age
 from ttork.models import K8sResourceData
@@ -131,6 +133,12 @@ class K8sContainers:
                         "Show Logs",
                         show=True,
                     ),
+                    Binding(
+                        "s",
+                        "resource_call('open_shell')",
+                        "Open Shell",
+                        show=True,
+                    ),
                 ]
             ),
             data=container_data,
@@ -172,3 +180,14 @@ class K8sContainers:
                 f"Failed to get logs for {container_name} in {pod_name}."
             )
         return ""
+
+    def open_shell(self, app: App, row: list):
+        """Open a shell in the specified container."""
+        container_name = str(row[0])
+        command = (
+            "clear;kubectl exec -it {0} --container {1} -- /bin/sh".format(
+                self.pod_name, container_name
+            )
+        )
+        with app.suspend():
+            system(command)
