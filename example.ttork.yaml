@@ -1,11 +1,35 @@
-k8s:
-  namespace: default
-  context: kind-kind
+#
+# Example configuration file for the ttork application
+#
 
+# The k8s block is required for ttork to work properly
+k8s:
+  namespace: default # Specifies the namespace tilt wil deploy to
+  context: kind-kind # Kubernetes context of your dev cluster
+
+# Projects allows you to set the configuration for each one of your
+# microservice development projects. Specifically, each refers to
+# a specific Tiltfile configuration.
+#
+# At the very least, you must provide a project name, and tiltFilePath.
 projects:
+  # The name of the project. Does not have to be unique
   - name: Seeder
+
+    # The path to the project's Tilt configuration file.
+    # This must be unique to all projects within this configuration.
     tiltFilePath: /Users/awaller/waller_dev/projects/rcwl/seeder/Tiltfile
+
+    # Optional environment variables can be set for each Tilt runtime
+    # environment. Commonly used to specify a unique 'forward' port for
+    # each application, making those environment variables available to
+    # Tilt at the Tiltfile level.
+    #
+    # Any number of environment variables may be set here, and each environment
+    # block is specific to the project it's nested under.
     environment:
+      # In your Tiltfile, you could then access like so:
+      # app_local_port = os.environ.get('APP_PORT', 8000)
       - name: APP_PORT
         value: "8080"
       - name: DB_PORT
