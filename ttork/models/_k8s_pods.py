@@ -1,6 +1,7 @@
 import yaml
 from datetime import datetime, timezone
 from kubernetes import client
+from kubernetes.client.rest import ApiException
 from ttork.utilities import format_age
 from ttork.models import K8sResourceData
 from textual.binding import Binding, _Bindings
@@ -18,9 +19,14 @@ class K8sPods:
     def refresh_resource_data(self) -> None:
         """Refresh resource data from the cluster."""
         api_instance = client.CoreV1Api()
-        pods = api_instance.list_namespaced_pod(
-            namespace=self.namespace, label_selector=self.label_selector
-        )
+
+        try:
+            pods = api_instance.list_namespaced_pod(
+                namespace=self.namespace, label_selector=self.label_selector
+            )
+        except ApiException:
+            return None
+
         pod_data = []
         now = datetime.now(timezone.utc)
         for pod in pods.items:
@@ -69,21 +75,28 @@ class K8sPods:
     def get_description(self, name: str) -> str:
         """Get the description of the specified pod."""
         api_instance = client.CoreV1Api()
-        pod = api_instance.read_namespaced_pod(
-            name=name, namespace=self.namespace
-        )
-        return yaml.dump(pod.to_dict(), default_flow_style=False)
+        try:
+            pod = api_instance.read_namespaced_pod(
+                name=name, namespace=self.namespace
+            )
+            return yaml.dump(pod.to_dict(), default_flow_style=False)
+        except ApiException:
+            pass
+        return ""
 
     def delete_resource(self, name: str) -> None:
         """Delete the specified pod."""
         api_instance = client.CoreV1Api()
-        api_instance.delete_namespaced_pod(
-            name=name,
-            namespace=self.namespace,
-            body=client.V1DeleteOptions(
-                propagation_policy="Foreground", grace_period_seconds=5
-            ),
-        )
+        try:
+            api_instance.delete_namespaced_pod(
+                name=name,
+                namespace=self.namespace,
+                body=client.V1DeleteOptions(
+                    propagation_policy="Foreground", grace_period_seconds=5
+                ),
+            )
+        except ApiException:
+            pass
 
     def get_resource_data(self) -> K8sResourceData:
         """Return the current resource data."""

@@ -285,3 +285,9 @@ class K8sResourceTable(DataTable):
                 self.k8s_service.resources[self.resource_view],
                 action,
             )(self.app, selected_row)
+
+    def reset_view(self) -> None:
+        """Reset the view to the initial state."""
+        self.resource_view = "Deployments"
+        self.crumbs = ["Deployments"]
+        self.update_cinfo(force_refresh=True, reset_cursor=True)

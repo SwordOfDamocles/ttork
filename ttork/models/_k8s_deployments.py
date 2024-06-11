@@ -1,6 +1,7 @@
 import yaml
 from datetime import datetime, timezone
 from kubernetes import client
+from kubernetes.client.rest import ApiException
 from textual.binding import Binding, _Bindings
 
 
@@ -20,9 +21,14 @@ class K8sDeployments:
     def refresh_resource_data(self) -> None:
         """Refresh resource data from the cluster."""
         api_instance = client.AppsV1Api()
-        deployments = api_instance.list_namespaced_deployment(
-            namespace=self.namespace, label_selector=self.label_selector
-        )
+
+        try:
+            deployments = api_instance.list_namespaced_deployment(
+                namespace=self.namespace, label_selector=self.label_selector
+            )
+        except ApiException:
+            return None
+
         deployment_data = []
         now = datetime.now(timezone.utc)
         for deployment in deployments.items:
@@ -73,10 +79,14 @@ class K8sDeployments:
     def get_description(self, name: str) -> str:
         """Get the description of the specified Deployment."""
         api_instance = client.AppsV1Api()
-        deployment = api_instance.read_namespaced_deployment(
-            name=name, namespace=self.namespace
-        )
-        return yaml.dump(deployment.to_dict(), default_flow_style=False)
+        try:
+            deployment = api_instance.read_namespaced_deployment(
+                name=name, namespace=self.namespace
+            )
+            return yaml.dump(deployment.to_dict(), default_flow_style=False)
+        except ApiException:
+            pass
+        return ""
 
     def delete_resource(self, name: str) -> None:
         """Delete the specified Deployment."""

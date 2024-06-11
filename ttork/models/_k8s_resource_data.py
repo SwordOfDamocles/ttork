@@ -4,27 +4,6 @@ from textual.binding import _Bindings
 class K8sResourceData:
     """K8sResourceData is a class that holds the data for a
     K8sResourceTable widget.
-
-    List of meta dictionaries for each column.
-    col_meta = [
-        {"name": "NAME", "width": None, "align": "left"},
-        {"name": "READY", "width": 10, "align": "center"},
-        {"name": "UP-TO-DATE", "width": 10, "align": "center"},
-        {"name": "AVAILABLE", "width": 10, "align": "center"},
-        {"name": "NAMESPACE", "width": None, "align": "left"},
-        {"name": "AGE", "width": 6, "align": "center"},
-    ],
-
-
-    List of dictionaries containing the display values/meta for each row.
-    "data": [
-        {
-            "values": ["my-app-06", "1/1", "1", "1", "default", "2d"],
-            "style": "loading",
-        },
-        ...
-    ],
-
     """
 
     def __init__(self, name, namespace, col_meta: list, data: list, **kwargs):

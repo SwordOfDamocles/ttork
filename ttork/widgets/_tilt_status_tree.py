@@ -63,6 +63,7 @@ class TiltStatusTree(Tree):
 
     def action_teardown_tilt(self) -> None:
         """Tear down the Tilt services."""
+        self.app.query_one("#k8s-resource-table").reset_view()
         self.tilt_service.tear_down_all_resources()
 
     def action_open_tilt_ui(self) -> None:

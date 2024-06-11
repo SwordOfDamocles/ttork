@@ -32,9 +32,12 @@ class K8sContainers:
         api_instance = client.CoreV1Api()
 
         # Grab the pod information, which includes the container information
-        pod = api_instance.read_namespaced_pod(
-            name=pod_name, namespace=self.namespace
-        )
+        try:
+            pod = api_instance.read_namespaced_pod(
+                name=pod_name, namespace=self.namespace
+            )
+        except ApiException:
+            return None
 
         container_data = []
 
@@ -176,9 +179,7 @@ class K8sContainers:
             )
             return logs
         except ApiException:
-            self.log.debug(
-                f"Failed to get logs for {container_name} in {pod_name}."
-            )
+            pass
         return ""
 
     def open_shell(self, app: App, row: list):
