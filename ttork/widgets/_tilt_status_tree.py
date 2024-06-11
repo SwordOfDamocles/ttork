@@ -51,9 +51,8 @@ class TiltStatusTree(Tree):
             self.refresh_tree_view()
 
     def refresh_tree_view(self) -> None:
-        """Clear and re-create all the tree nodes, based on self.pinfo
-        """
-        self.log.debug('TiltStatusTree: Detected data changes, updating.')
+        """Clear and re-create all the tree nodes, based on self.pinfo"""
+        self.log.debug("TiltStatusTree: Detected data changes, updating.")
         self.clear()
         self.add_treedata()
         self.root.expand()
@@ -72,19 +71,21 @@ class TiltStatusTree(Tree):
         if selected_node.data:
             webbrowser.open_new_tab(
                 "http://localhost:{0}/r/(all)/overview".format(
-                    selected_node.data['port'],
-                    )
+                    selected_node.data["port"],
                 )
+            )
 
     def check_action(
-        self, action: str, parameters: tuple[object, ...]
+        self,
+        action: str,
+        parameters: tuple[object, ...],
     ) -> bool:
         """Check if the action is allowed."""
         if action == "open_tilt_ui":
             # Disable if the tilt service is shown as offline
             selected_node = self.cursor_node
             if selected_node.data:
-                return selected_node.data['online']
+                return selected_node.data["online"]
             else:
                 return False
         return True
@@ -96,53 +97,52 @@ class TiltStatusTree(Tree):
         pinfo = self.tilt_service.get_status_info()
         for project_key in pinfo:
             p_node_data = {
-                'key': project_key,
-                'name': pinfo[project_key]['name'],
-                'port': pinfo[project_key]['port'],
-                'online': pinfo[project_key]['service_online'],
+                "key": project_key,
+                "name": pinfo[project_key]["name"],
+                "port": pinfo[project_key]["port"],
+                "online": pinfo[project_key]["service_online"],
             }
             project_node = self.root.add("", data=p_node_data)
             project_node.expand()
             project_pending = False
             project_ok = True
-            for resource in pinfo[project_key]['uiResources']:
+            for resource in pinfo[project_key]["uiResources"]:
                 resource_node = project_node.add("", data=p_node_data)
                 resource_node.allow_expand = False
-                update_status = resource['status'].get(
-                    'updateStatus', 'offline')
+                update_status = resource["status"].get(
+                    "updateStatus", "offline"
+                )
                 label = Text.assemble(
                     TILT_STATUS_ICONS.get(
                         update_status,
-                        TILT_STATUS_ICONS['other'],
+                        TILT_STATUS_ICONS["other"],
                     ),
                     Text.from_markup(
-                        f" [b]{resource['metadata']['name']}[/b]"
+                        f" [b]{resource['metadata']['name']}[/b]",
                     ),
                 )
                 resource_node.set_label(label)
 
                 if (
-                    update_status == 'pending'
-                    or update_status == 'in_progress'
+                    update_status == "pending"
+                    or update_status == "in_progress"
                 ):
                     project_pending = True
-                elif update_status == 'error':
+                elif update_status == "error":
                     project_ok = False
 
             # Set the top-level status based on combined resource states
             if not pinfo[project_key]["service_online"]:
-                ps_icon = TILT_STATUS_ICONS['offline']
+                ps_icon = TILT_STATUS_ICONS["offline"]
             elif project_pending:
-                ps_icon = TILT_STATUS_ICONS['pending']
+                ps_icon = TILT_STATUS_ICONS["pending"]
             elif not project_ok:
-                ps_icon = TILT_STATUS_ICONS['error']
+                ps_icon = TILT_STATUS_ICONS["error"]
             else:
-                ps_icon = TILT_STATUS_ICONS['ok']
+                ps_icon = TILT_STATUS_ICONS["ok"]
             project_label = Text.assemble(
                 ps_icon,
-                Text.from_markup(
-                    f" {pinfo[project_key]["name"]}"
-                ),
+                Text.from_markup(f" {pinfo[project_key]['name']}"),
             )
             project_node.set_label(project_label)
 
