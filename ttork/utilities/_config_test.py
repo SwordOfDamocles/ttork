@@ -2,7 +2,7 @@
 This module is used to test the config module.
 """
 
-from ttork.utilities import read_yaml_config, is_valid_config
+from ._config import read_yaml_config, is_valid_config
 
 import unittest
 from unittest.mock import patch, mock_open
