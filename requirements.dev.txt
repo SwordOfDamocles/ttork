@@ -6,3 +6,6 @@ textual-dev
 pylint
 flake8
 black
+
+# Unit Testing
+pytest
