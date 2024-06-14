@@ -12,7 +12,7 @@ maintainers = [{ name = "Andy Waller", email = "awaller@gmail.com" }]
 description = "Textual Tilt Orkestrator: Multiple-Repository Tilt Orchestration Tool."
 readme = "README.md"
 license = { file = "LICENSE" }
-keywords = ["Tilt", "Docker", "ttork"]
+keywords = ["Tilt", "Docker", "Kubernetes", "k8s", "ttork"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python",

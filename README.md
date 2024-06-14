@@ -20,7 +20,7 @@ Beyond Tilt bringup, ttork also provides a rich kubernetes management interface
 for simple viewing and management of generated kubernetes resources within
 the developers local cluster. It's NOT meant to be a kubernetes management
 tool, but does provide a simple way for the developer to view resources and
-shell into running containers without having to remember complex kubectl
+**shell into running containers** without having to remember complex kubectl
 commands.
 
 
