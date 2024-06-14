@@ -30,7 +30,9 @@ class TiltStatusTree(Tree):
     def on_mount(self) -> None:
         self.border_title = "Tilt Services"
         self.tilt_service = TiltService(self.app.ttork_config, self.log)
-        self.tilt_service.start_tilt_processes()
+
+        if self.app.ttork_config.get("autostart", False):
+            self.tilt_service.start_tilt_processes()
 
         self.update_pinfo(force_refresh=True)
         self.set_interval(1, self.update_pinfo)
@@ -59,7 +61,7 @@ class TiltStatusTree(Tree):
 
     def action_start_tilt(self) -> None:
         """Start the Tilt services."""
-        self.tilt_service.start_all_tilt()
+        self.tilt_service.start_tilt_processes()
 
     def action_teardown_tilt(self) -> None:
         """Tear down the Tilt services."""

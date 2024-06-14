@@ -86,6 +86,9 @@ def start(options: Values, args: list[str]) -> None:
     if not is_valid_config(ttork_conf):
         return
 
+    if options.autostart:
+        ttork_conf["autostart"] = True
+
     # Start the application
     app = TTorkApp()
     app.ttork_config = ttork_conf

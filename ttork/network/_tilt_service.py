@@ -86,11 +86,6 @@ class TiltService:
         """
         return copy.deepcopy(self.status_info)
 
-    def start_all_tilt(self) -> None:
-        """Start all Tilt processes."""
-        for project_key in self.status_info:
-            self.start_tilt_process(project_key)
-
     def start_tilt_process(self, project_key: str) -> None:
         """Start up a single Tilt process, by project key."""
         if project_key in self.status_info:
