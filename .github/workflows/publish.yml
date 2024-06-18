@@ -46,6 +46,22 @@ jobs:
     - name: Install dependencies
       run: |
         pip install setuptools wheel build
+    - name: Update Versioning For Release
+      run: |
+        # from refs/tags/v1.2.3 get 1.2.3
+        VERSION=$(echo $GITHUB_REF | sed 's#.*/v##')
+        VER_PLACEHOLDER='__version__ = "develop"'
+        VER_FILE='ttork/__version__.py'
+        PYPROJECT_PLACEHOLDER='version = "0.0.0"'
+        PYPROJECT_FILE='pyproject.toml'
+
+        #ensure the placeholder is in the version file
+        grep "$VER_PLACEHOLDER" "$VER_FILE"
+        sed -i "s/$VER_PLACEHOLDER/__version__ = \"${VERSION}\"/" "$VER_FILE"
+
+        #ensure the placeholder is in the pyproject file
+        grep "$PYPROJECT_PLACEHOLDER" "$PYPROJECT_FILE"
+        sed -i "s/$PYPROJECT_PLACEHOLDER/version = \"${VERSION}\"/" "$PYPROJECT_FILE"
     - name: Build
       run: |
         python -m build
