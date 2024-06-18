@@ -53,11 +53,6 @@ Header {
     color: #fefdfd;
 }
 
-Footer {
-    background: #5f43b2;
-    color: #fefdfd;
-}
-
 .footer--key {
     background: #808080;
     color: #fefdfd;

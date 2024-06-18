@@ -6,17 +6,17 @@
 #
 cachetools==5.3.3
     # via google-auth
-certifi==2024.2.2
+certifi==2024.6.2
     # via
     #   kubernetes
     #   requests
 charset-normalizer==3.3.2
     # via requests
-google-auth==2.29.0
+google-auth==2.30.0
     # via kubernetes
 idna==3.7
     # via requests
-kubernetes==29.0.0
+kubernetes==30.1.0
     # via ttork (pyproject.toml)
 linkify-it-py==2.0.3
     # via markdown-it-py
@@ -47,7 +47,7 @@ pyyaml==6.0.1
     # via
     #   kubernetes
     #   ttork (pyproject.toml)
-requests==2.32.0
+requests==2.32.3
     # via
     #   kubernetes
     #   requests-oauthlib
@@ -62,13 +62,13 @@ six==1.16.0
     # via
     #   kubernetes
     #   python-dateutil
-textual==0.61.1
+textual==0.69.0
     # via ttork (pyproject.toml)
-typing-extensions==4.11.0
+typing-extensions==4.12.2
     # via textual
 uc-micro-py==1.0.3
     # via linkify-it-py
-urllib3==2.2.1
+urllib3==2.2.2
     # via
     #   kubernetes
     #   requests
