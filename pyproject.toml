@@ -31,4 +31,4 @@ Repository = "https://github.com/SwordOfDamocles/ttork"
 Changelog = "https://github.com/SwordOfDamocles/ttork/blob/master/CHANGELOG.md"
 
 [project.scripts]
-ttork = "ttork:main"
+ttork = "ttork:main(sys.argv[1:])"
