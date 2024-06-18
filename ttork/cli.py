@@ -41,7 +41,7 @@ def action_help(description: str, action_help: list[tuple[str, str]]) -> None:
     sys.stdout.write(top_level_help)
 
 
-def main(argv: list[str] = None):
+def main(argv: list[str] = sys.argv[1:]):
     """Commandline entry point for ttork."""
     if not argv:
         argv = ["start"]
