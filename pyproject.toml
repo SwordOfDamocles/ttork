@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ttork"
-version = "0.2.5"
+version = "0.0.0" # This is a placeholder and will be replaced
 dependencies = ["textual", "pyyaml", "requests", "kubernetes"]
 requires-python = ">=3.10"
 authors = [{ name = "Andy Waller", email = "awaller@gmail.com" }]
