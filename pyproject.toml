@@ -14,7 +14,7 @@ readme = "README.md"
 license = { file = "LICENSE" }
 keywords = ["Tilt", "Docker", "Kubernetes", "k8s", "ttork"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 2 - Pre-Alpha",
     "Programming Language :: Python",
 ]
 
@@ -28,4 +28,4 @@ Repository = "https://github.com/SwordOfDamocles/ttork"
 Changelog = "https://github.com/SwordOfDamocles/ttork/blob/master/CHANGELOG.md"
 
 [project.scripts]
-ttork-cli = "ttork:main"
+ttork = "ttork:main"
