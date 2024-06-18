@@ -59,15 +59,33 @@ but resources are currently pretty limited.**
 
 
 # Installation
-## TODO
+While you're welcome to clone the repository and run it from there, there are
+two other installation methods which are currently supported.
 
-# Development Notes
-This starts up the debug console
-> textual console
+**Note**: All current testing has been done on latest MacOS. Installing on
+anything else falls into the `choose your own adventure` category.
 
-Then run the application
-> textual run --dev ttork.py
+## Python - pip
+ttork can be installed into your current python environment by simply using pip:
+```bash
+pip install ttork
+```
 
-# Packaging Notes
-For upgrading, we're using pip-compile
-> pip-compile --upgrade
+## Homebrew - MacOS
+ttork can also be installed via Homebrew if you're on MacOS.
+
+First, tap the repository:
+```bash
+brew tap SwordOfDamocles/ttork
+```
+
+Then install:
+```bash
+brew install swordofdamocles/ttork/ttork
+```
+
+Check installed version:
+```bash
+$ ttork version
+ttork, version 0.3.1
+```
