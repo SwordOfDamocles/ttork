@@ -1,4 +1,6 @@
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://todogetlink)
+[![PyPI](https://img.shields.io/pypi/v/ttork)](https://pypi.org/project/ttork/)
+[![Python 3.x](https://img.shields.io/pypi/pyversions/ttork?logo=python&logoColor=white)](https://pypi.org/project/ttork/)
 ---
 
 
