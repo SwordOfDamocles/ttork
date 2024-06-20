@@ -15,7 +15,7 @@ and maintain its own individual Tiltfile development configuration, while
 providing a way for the developer to bring up the services of several
 repositories in a single command.
 
-<img src="assets/tilt-over-1.gif"/>
+<img src="assets/ttork_intro_yaml.png"/>
 
 ## View Kubernetes Resources While Developing!
 
@@ -25,6 +25,8 @@ the developers local cluster. It's NOT meant to be a kubernetes management
 tool, but does provide a simple way for the developer to view resources and
 **shell into running containers** without having to remember complex kubectl
 commands.
+
+<img src="assets/tilt-over-1.gif"/>
 
 
 ## Note...
